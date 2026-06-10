@@ -3,6 +3,12 @@ name = "magicsquare-xx"
 version = "0.0.0"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+gui = ["PyQt6>=6.6"]
+
+[project.scripts]
+magic-square-gui = "demo.magic_square_gui:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "tests"]

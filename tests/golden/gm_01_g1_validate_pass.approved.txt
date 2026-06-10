@@ -1,0 +1,19 @@
+# T-GM-01 golden master
+grid:
+16  2  3 13
+ 5 11 10  8
+ 9  7  6 12
+ 4 14 15  1
+line_sums:
+  R1=34
+  R2=34
+  R3=34
+  R4=34
+  C1=34
+  C2=34
+  C3=34
+  C4=34
+  D1=34
+  D2=34
+status: pass
+failed_lines:
