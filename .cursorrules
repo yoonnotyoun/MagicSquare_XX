@@ -1,0 +1,56 @@
+# MagicSquare_XX — 프로젝트 헌법 (초안)
+
+## 도메인 (불변)
+
+- 격자: 4×4 정수 배열 `grid[4][4]`
+- 빈 칸: `0` (미채움). 채운 칸: `1`~`16` 각 1회
+- 마법 상수: **34**
+- 검산 대상 **10선** (누락·한쪽만 검사 금지):
+  - 행 R1~R4, 열 C1~C4, 대각선 D1(주), D2(반)
+- "맞다" 판정 전 10선 전부 합 34를 검사한다. 한 축이라도 34가 아니면 완료로 보지 않는다.
+- 격자 값이 바뀌면 10선 **전부** 재검산한다.
+
+## 공개 API (계약)
+
+```python
+validate_lines(grid) -> {
+    "status": "pass" | "fail" | "incomplete",
+    "failed_lines": [...]   # 예: ["R2", "D1"]; pass·incomplete 시 []
+}
+```
+
+- `pass`: 10선 모두 합 34, 빈 칸(0) 없음
+- `fail`: 빈 칸 없으나 합 ≠ 34인 선 존재 → `failed_lines`에 해당 선 ID
+- `incomplete`: 빈 칸(0) 존재 → 완료 판정·제출 불가
+
+## ECB (책임 분리)
+
+| 계층 | 역할 | 예시 |
+|------|------|------|
+| **Entity** | 격자·선 합·선 ID | 10선 합 계산, `failed_lines` 항목 |
+| **Control** | 검산 오케스트레이션 | 10선 일괄 검사, 변경 후 재검산, `status` 결정 |
+| **Boundary** | 입출력 | `grid` 수신·결과 dict 반환만; 검산 로직 금지 |
+
+- `src/validate_lines.py`는 Control 진입점. Entity 로직은 별 모듈로 분리한다.
+- Boundary(UI·CLI)는 Mom Test 범위 밖 — 이번 프로젝트에서 만들지 않는다.
+
+## Mom Test 게이트
+
+증거와 무관한 기능 추가 금지: 솔버, 자동 채우기, UI, 5×5 확장, 힌트 등.
+
+## TDD (RED → GREEN → REFACTOR)
+
+1. **RED**: `tests/`만 수정. 실패하는 테스트 추가. `pytest` exit ≠ 0 확인.
+2. **GREEN**: `src/` 최소 구현으로 통과.
+3. **REFACTOR**: ECB·SRP 유지, 테스트 통과 유지.
+
+- 1사이클 = 요구 1묶음. assert 완화·`skip`·`xfail`로 RED 우회 **금지**.
+- RED 단계에서 `src/` 구현·시그니처 변경 **금지** (테스트가 계약을 정의).
+
+## AI 작업 규칙
+
+- 사용자와의 대화·설명·주석: **한국어**
+- TDD 작업 시 응답 **첫 줄**에 Phase 선언:
+  `Phase: red | green | refactor | Layer: entity|control|boundary | Track: Logic`
+- `git commit` / push: **사용자가 명시적으로 요청할 때만**
+- 범위 밖 파일·기능은 제안하지 말고 Mom Test 게이트로 거른다.
